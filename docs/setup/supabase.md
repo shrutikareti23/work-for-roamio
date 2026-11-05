@@ -24,11 +24,15 @@ Takes about 15 minutes. You only do this once.
 
 ## 3. Email sign-in settings
 
-1. Left menu **Authentication** → **Sign In / Providers** → **Email**:
-   - **Enable Email provider**: on
+1. Left menu **Authentication** → **Sign In / Providers**.
+2. In the **User Signups** section at the top of that page:
+   - **Allow new users to sign up**: on
    - **Confirm email**: **off for now** (see note below)
+   - Click **Save changes**.
+3. Further down, open the **Email** provider:
+   - **Enable email provider**: on
    - **Minimum password length**: `8`
-   - Click **Save**.
+   - Scroll down and click **Save**.
 
 > **Why "Confirm email" is off for now:** Supabase only lets you edit email templates
 > after you connect your own email service (custom SMTP). Its default emails contain a
@@ -36,7 +40,7 @@ Takes about 15 minutes. You only do this once.
 > launch, Phase 11), keep confirmation off. Sign up, sign in, sign out and delete
 > account all work; **Forgot password** will work once email is connected.
 >
-> Later, after custom SMTP is set up: turn **Confirm email** back on and set these
+> Later, after custom SMTP is set up: turn **Confirm email** (in **User Signups**) back on and set these
 > templates under **Authentication → Emails → Templates**:
 >
 > - **Confirm signup** — subject `Your Roamio code`, body:
