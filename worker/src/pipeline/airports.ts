@@ -182,7 +182,8 @@ export function findAirport(input: AirportLookup): AirportMatch | null {
   let city = normalizeCity(raw.split(',')[0] ?? '');
   city = ALIASES[city] ?? city;
 
-  const primary = PRIMARY[city] ? BY_IATA.get(PRIMARY[city]!) : undefined;
+  const primaryCode = PRIMARY[city];
+  const primary = primaryCode ? BY_IATA.get(primaryCode) : undefined;
   if (primary && (!cc || primary.countryCode === cc)) return { airport: primary, match: 'city' };
 
   const options = (BY_CITY.get(city) ?? []).filter((a) => !cc || a.countryCode === cc);
@@ -192,7 +193,8 @@ export function findAirport(input: AirportLookup): AirportMatch | null {
         Number(b.large) - Number(a.large) ||
         (input.near ? haversineKm(input.near, a) - haversineKm(input.near, b) : 0),
     );
-    return { airport: sorted[0]!, match: 'city' };
+    const best = sorted[0];
+    if (best) return { airport: best, match: 'city' };
   }
 
   if (input.near) {

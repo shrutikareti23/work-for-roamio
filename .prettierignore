@@ -6,3 +6,4 @@ coverage
 package-lock.json
 mobile/ios
 mobile/android
+worker/src/data/

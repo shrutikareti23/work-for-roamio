@@ -13,13 +13,12 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
 ## Current status
 
-- **Last completed phase:** 1 (Skeleton) — app runs in Expo Go on the owner's phone.
-- **Current phase:** 2 (Core logic + tests) — IN PROGRESS.
-- **In progress:** done so far: shared schemas (dates, geo, diet, place, weather, trip,
-  itinerary), worker/src/pipeline (hours, diet, weather, restaurants, airports),
-  airports.json. Still to do: mobile/src/lib/deeplinks.ts, all Phase 2 unit tests,
-  lint/format, docs, phase report.
-- **Open TODOs carried forward:** add `@expo/ngrok` as a mobile devDependency (Phase 2).
+- **Last completed phase:** 2 (Core logic + tests).
+- **Next phase:** 3 (Supabase + email auth). Not started; waiting for owner's "continue".
+  Owner will need to create a free Supabase project (no credit card).
+- **In progress / uncommitted work:** none.
+- **Open TODOs carried forward:** owner to glance at https://ourairports.com/data/ to
+  confirm the airport data is still public domain (sandbox can't reach that site).
 
 ## The owner
 
@@ -106,9 +105,12 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
 │   │   ├── routes/       HTTP endpoints (/intake, /itinerary, /places, /account, ...)
 │   │   ├── sources/      nominatim, overpass, openmeteo, wikimedia, gemini clients
 │   │   ├── pipeline/     hours check, diet filter, weather swap, restaurant pick, schedule
-│   │   └── lib/          cache, rate limit, retry/backoff, auth (Supabase JWT verify)
+│   │   ├── lib/          cache, rate limit, retry/backoff, auth (Supabase JWT verify)
+│   │   └── data/         airports.json (generated, not Prettier-formatted)
 │   └── test/             Vitest tests
-├── shared/src/           types + zod schemas used by both app and Worker
+├── shared/src/           zod schemas + helpers used by app and Worker (dates, geo,
+│                         diet, place, weather, trip, itinerary); tests in shared/test
+├── scripts/              build-airports.mjs (regenerates worker/src/data/airports.json)
 ├── supabase/migrations/  SQL migrations (tables, RLS policies)
 ├── docs/                 privacy-policy.html (GitHub Pages), store checklist
 └── .github/workflows/    nightly DB backup
@@ -129,6 +131,15 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
 - TypeScript 6 no longer auto-loads `@types/*`; list them in `compilerOptions.types`.
 - ESLint pinned to v9 (eslint-config-expo's plugins don't support v10 yet).
 - Expo Go only has built-in native modules; anything else needs an EAS dev build.
+- `opening_hours` is **LGPL-3.0**: keep it in the Worker only (server use isn't
+  distribution). The app never bundles it; it receives precomputed hours labels.
+- Opening-hours code builds Dates with the local-time constructor (wall-clock at the
+  destination). Worker tests run with `TZ=Pacific/Auckland` (vitest.config.ts) to prove
+  results don't depend on the server's time zone.
+- Sandbox network: raw.githubusercontent.com works; ourairports.com and *.github.io are
+  blocked. Airport CSV comes from the GitHub mirror (davidmegginson/ourairports-data).
+- Worker ESLint is `strict`: no `!` non-null assertions in src (allowed in tests).
+- Pipeline code bundles to ~313 KB gzip (free Worker limit 3 MB compressed).
 
 ## Owner's machine (Windows, no Mac)
 
@@ -196,7 +207,7 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 1. **Skeleton** ✅ — Expo app (Router, TS strict, ESLint/Prettier, Jest, light/dark theme,
    tab layout with placeholder screens), Worker skeleton (`/health`, Vitest), `shared/`.
    See it in Expo Go.
-2. **Core logic + tests** — pure functions with unit tests: deep links (with fallbacks),
+2. **Core logic + tests** ✅ — pure functions with unit tests: deep links (with fallbacks),
    city→airport codes, opening-hours checks, diet intersection filter, weather swap,
    restaurant selection (open + nearby + diet), zod schemas for trips/itineraries.
 3. **Supabase + email auth** — migrations (profiles, trips, itinerary days, ratings),
@@ -246,6 +257,27 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
   Node + Git on Windows, Expo Go on phone, Expo account (CLI login via eas-cli SSO).
 - Carried forward: add `@expo/ngrok` devDependency.
 
+### Phase 2 — Core logic + tests ✅
+
+- `shared/src`: zod schemas for dates/times, TripProfile + Traveler (diet needs,
+  allergies, restrictions with defaults), PlaceCandidate (OSM id + tags), DayWeather
+  (forecast vs typical), Slot / ItineraryDay / Itinerary, ScheduleDraft (what Gemini
+  must return) + `findUnknownPlaceIds` (catches invented places); haversine + walking time.
+- `worker/src/pipeline`: `hours.ts` (checkVisit / hoursLabelAt: open / closed /
+  "Hours unverified", public holidays, past-midnight, 24/7), `diet.ts` (group needs =
+  union of all travelers; yes/limited/no/unknown; verdict confirmed / limited /
+  unconfirmed / excluded; allergies never verified, always the allergen notice),
+  `weather.ts` (bad-weather rules, indoor/outdoor/mixed classification, drop outdoor
+  candidates on bad forecast days, swap planned outdoor slots; "typical" weather never
+  swaps), `restaurants.ts` (1 main + 2 backups: open, diet-safe, unused, nearby with
+  widening radius, scored; facts list for "why we picked it"), `airports.ts` (city →
+  IATA with aliases, primary-airport overrides, country filter, nearest fallback).
+- `mobile/src/lib/deeplinks.ts`: Google Flights (`q=` query), Skyscanner, Booking.com,
+  Airbnb, directions (Apple Maps iOS / Google Maps else), reviews (Google Maps + Yelp
+  search), phone (`tel:`) and website sanitizing; plain-search-page fallbacks.
+- Added `@expo/ngrok` as a mobile devDependency (Phase 1 TODO done).
+- Tests: 63 Jest + 88 Vitest (worker) + 11 Vitest (shared) = 162, all passing.
+
 ## Open questions / decisions log
 
 - App name: **Roamio** (working name). Placeholder bundle ID / package:
@@ -264,3 +296,9 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 - Code lives on GitHub: https://github.com/shrutikareti23/work-for-roamio (branch `main`).
   The cloud workspace is temporary, so push at the end of every phase.
 - iOS `supportsTablet: false` for launch (avoids required iPad screenshots/review).
+- Deep-link URL formats are public but undocumented; Google Flights `q=` passenger
+  count is best-effort. Verify by tapping each button on a phone in Phase 7.
+- Weather "bad day" thresholds (BAD_WEATHER_LIMITS in weather.ts): thunder, freezing
+  rain, heavy snow, ≥8 mm rain (or ≥3 mm at ≥70%), ≥35°C, ≤-5°C high, ≥50 km/h wind.
+- Restaurant search radius: walk 1 km, transit 3 km, car 8 km; widens ×2, ×4 if < 3 found.
+- Children: sites need child ages; we pass ages only if the user gives them (no guessing).

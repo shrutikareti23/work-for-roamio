@@ -27,9 +27,9 @@ const UNVERIFIED: HoursCheck = { status: 'unverified', label: 'Hours unverified'
 const OPEN_24H: HoursCheck = { status: 'open', label: 'Open 24 hours' };
 
 function localDate(date: string, time: string): Date {
-  const [y, mo, d] = date.split('-').map(Number);
+  const [y = 0, mo = 1, d = 1] = date.split('-').map(Number);
   const mins = toMinutes(time);
-  return new Date(y!, mo! - 1, d!, Math.floor(mins / 60), mins % 60);
+  return new Date(y, mo - 1, d, Math.floor(mins / 60), mins % 60);
 }
 
 /** "18:00" -> "6 PM", "09:30" -> "9:30 AM", "00:00" -> "midnight". */
