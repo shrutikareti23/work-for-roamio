@@ -1,12 +1,12 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
-import { NativeTabs } from 'expo-router/native-tabs';
+import { DarkTheme, DefaultTheme, Stack, ThemeProvider } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 
-import { palette, useTheme } from '@/theme';
+import { AuthProvider } from '@/lib/session';
+import { useTheme } from '@/theme';
 
 /**
- * Root layout: wraps every screen. Expo Router turns each file in src/app/ into a
- * route (like Flask routes, but chosen by file name), and this file puts them in tabs.
+ * Root layout: wraps every screen. The tabs live in the (tabs) folder; the sign-in
+ * screens in auth/ slide up over them as a modal.
  */
 export default function RootLayout() {
   const { scheme, colors } = useTheme();
@@ -24,27 +24,30 @@ export default function RootLayout() {
   };
 
   return (
-    <ThemeProvider value={navTheme}>
-      <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
-      <NativeTabs
-        backgroundColor={colors.surface}
-        indicatorColor={palette[scheme].surfaceMuted}
-        tintColor={colors.primary}
-        labelStyle={{ selected: { color: colors.primary } }}
-      >
-        <NativeTabs.Trigger name="index">
-          <NativeTabs.Trigger.Label>Plan</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="sparkles" md="travel_explore" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="trips">
-          <NativeTabs.Trigger.Label>Trips</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="suitcase" md="luggage" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="account">
-          <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf="person.crop.circle" md="account_circle" />
-        </NativeTabs.Trigger>
-      </NativeTabs>
-    </ThemeProvider>
+    <AuthProvider>
+      <ThemeProvider value={navTheme}>
+        <StatusBar style={scheme === 'dark' ? 'light' : 'dark'} />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="auth/sign-in" options={{ presentation: 'modal', title: 'Sign in' }} />
+          <Stack.Screen
+            name="auth/sign-up"
+            options={{ presentation: 'modal', title: 'Create account' }}
+          />
+          <Stack.Screen
+            name="auth/verify"
+            options={{ presentation: 'modal', title: 'Enter code' }}
+          />
+          <Stack.Screen
+            name="auth/forgot-password"
+            options={{ presentation: 'modal', title: 'Reset password' }}
+          />
+          <Stack.Screen
+            name="auth/new-password"
+            options={{ presentation: 'modal', title: 'New password', gestureEnabled: false }}
+          />
+        </Stack>
+      </ThemeProvider>
+    </AuthProvider>
   );
 }

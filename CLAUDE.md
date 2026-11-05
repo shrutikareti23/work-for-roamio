@@ -13,15 +13,19 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
 ## Current status
 
-- **Current phase:** 3 (Supabase + email auth) — IN PROGRESS.
-- **In progress:** done: verified Supabase free terms (via GitHub docs mirror), migration
-  `supabase/migrations/20261105000000_initial_schema.sql` (profiles, trips, trip_days,
-  ratings, RLS, get_place_ratings, delete_my_account), PGlite RLS tests (15 passing),
-  supabase-js + secure storage packages installed. To do: app Supabase client +
-  LargeSecureStore, auth screens (sign in/up, OTP code verify, reset password, sign
-  out, delete account), tests, docs, owner setup guide, phase report.
-- **Open TODOs carried forward:** owner to glance at https://ourairports.com/data/ to
-  confirm the airport data is still public domain (sandbox can't reach that site).
+- **Last completed phase:** 3 (Supabase + email auth). Code done and tested locally.
+- **Waiting on owner:** create the Supabase project and follow `docs/setup/supabase.md`
+  (run the migration, email settings + code templates, put URL + publishable key in
+  `mobile/.env`), then test sign-up / sign-in / reset / delete on the phone.
+- **Next phase:** 4 (Worker data proxy). Not started; waiting for owner's "continue".
+  Owner will need a free Cloudflare account.
+- **In progress / uncommitted work:** none.
+- **Open TODOs carried forward:**
+  - Owner: glance at https://ourairports.com/data/ to confirm airport data is still
+    public domain (sandbox can't reach that site).
+  - Before launch (Phase 11): set up free custom SMTP for Supabase Auth (default sender
+    only mails team members, 2/hour). Candidate: Brevo free plan — verify terms then.
+  - Phase 4: Worker verifies Supabase JWTs via JWKS (asymmetric signing keys).
 
 ## The owner
 
@@ -87,7 +91,7 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
 ## Repository layout
 
-npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`; one
+npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`, `supabase`; one
 `node_modules` at the root). `@roamio/shared` is imported by both app and Worker.
 
 ```
@@ -97,7 +101,10 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
 ├── mobile/               Expo app (SDK 58)
 │   ├── app.json          name, bundle IDs, icons, splash
 │   └── src/
-│       ├── app/          Expo Router screens (file name = route); _layout.tsx = tabs
+│       ├── app/          Expo Router screens (file name = route)
+│       │   ├── _layout.tsx   root Stack + AuthProvider
+│       │   ├── (tabs)/       Plan / Trips / Account tabs (NativeTabs)
+│       │   └── auth/         sign-in, sign-up, verify (code), forgot-password, new-password
 │       ├── components/   reusable UI (AppText, Button, Card, Screen, PlaceCard, ...)
 │       ├── lib/          api client, config, supabase client, deeplinks.ts, offline cache
 │       │   └── providers/ hotels.ts (pricing provider interface; launch = no prices)
@@ -114,7 +121,10 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
 ├── shared/src/           zod schemas + helpers used by app and Worker (dates, geo,
 │                         diet, place, weather, trip, itinerary); tests in shared/test
 ├── scripts/              build-airports.mjs (regenerates worker/src/data/airports.json)
-├── supabase/migrations/  SQL migrations (tables, RLS policies)
+├── supabase/             workspace `roamio-db`
+│   ├── migrations/       SQL migrations (run in Supabase SQL Editor, in name order)
+│   └── test/             PGlite (Postgres-in-WASM) RLS tests + Supabase shim
+├── docs/setup/           owner setup guides (supabase.md, ...)
 ├── docs/                 privacy-policy.html (GitHub Pages), store checklist
 └── .github/workflows/    nightly DB backup
 ```
@@ -143,6 +153,15 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
   blocked. Airport CSV comes from the GitHub mirror (davidmegginson/ourairports-data).
 - Worker ESLint is `strict`: no `!` non-null assertions in src (allowed in tests).
 - Pipeline code bundles to ~313 KB gzip (free Worker limit 3 MB compressed).
+- supabase.com is blocked in the sandbox; read Supabase docs from
+  raw.githubusercontent.com/supabase/supabase/master/apps/docs/content/guides/...
+- Supabase API keys: app uses the **publishable** key (`sb_publishable_...`); secret key
+  (`sb_secret_...`) only server-side. Legacy anon/service_role still work.
+- Supabase default email sender: only to project team members, **2 emails/hour**.
+- Auth uses 6–10 digit email **codes** (verifyOtp type `email` / `recovery`), not
+  links, so no deep-link redirect setup is needed (Expo Go tunnel URLs change).
+- RLS tests (`supabase/test`) take ~35 s: each test builds a fresh PGlite database.
+- App jest setup (`mobile/jest.setup.ts`) mocks AsyncStorage, SecureStore, expo-crypto.
 
 ## Owner's machine (Windows, no Mac)
 
@@ -213,7 +232,7 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 2. **Core logic + tests** ✅ — pure functions with unit tests: deep links (with fallbacks),
    city→airport codes, opening-hours checks, diet intersection filter, weather swap,
    restaurant selection (open + nearby + diet), zod schemas for trips/itineraries.
-3. **Supabase + email auth** — migrations (profiles, trips, itinerary days, ratings),
+3. **Supabase + email auth** ✅ — migrations (profiles, trips, itinerary days, ratings),
    RLS policies, sign up / in / out / password reset in the app, secure session storage,
    in-app account deletion (via Worker with service role key). Owner creates Supabase project.
 4. **Worker data proxy** — Supabase JWT verification, per-user rate limiting, KV
@@ -281,6 +300,24 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 - Added `@expo/ngrok` as a mobile devDependency (Phase 1 TODO done).
 - Tests: 63 Jest + 88 Vitest (worker) + 11 Vitest (shared) = 162, all passing.
 
+### Phase 3 — Supabase + email auth ✅ (owner setup pending)
+
+- Verified Supabase free plan (from GitHub docs mirror): $0, 50k MAU, 500 MB DB, 5 GB
+  egress, pauses after 1 week inactive, 2 active projects; default SMTP team-only, 2/h.
+- Migration `20261105000000_initial_schema.sql`: profiles (auto-created by trigger on
+  auth.users), trips (profile jsonb, dates, status), trip_days (one row per day, data
+  jsonb), ratings (thumbs_up + note ≤280, one per user per place); RLS on all, anon has
+  no access; `get_place_ratings(text[])` (counts only when ≥5 ratings);
+  `delete_my_account()` (security definer, cascades everything).
+- App: `lib/supabase.ts` (client, AppState auto-refresh), `lib/secure-storage.ts`
+  (LargeSecureStore: AES key in SecureStore, ciphertext in AsyncStorage, key from
+  expo-crypto), `lib/auth.ts` (sign in/up, code verify, resend, reset, update password,
+  sign out, delete account; friendly error messages), `lib/session.tsx` (AuthProvider
+  / useAuth), `lib/validation.ts`; components TextField, FormMessage, Button
+  (loading + danger); Account tab signed-in/out states with 2-step delete confirm.
+- Tests: 104 Jest + 88 worker + 11 shared + 15 RLS (PGlite) = 218, all passing.
+- Owner guide: `docs/setup/supabase.md`.
+
 ## Open questions / decisions log
 
 - App name: **Roamio** (working name). Placeholder bundle ID / package:
@@ -305,3 +342,7 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
   rain, heavy snow, ≥8 mm rain (or ≥3 mm at ≥70%), ≥35°C, ≤-5°C high, ≥50 km/h wind.
 - Restaurant search radius: walk 1 km, transit 3 km, car 8 km; widens ×2, ×4 if < 3 found.
 - Children: sites need child ages; we pass ages only if the user gives them (no guessing).
+- Account deletion uses the `delete_my_account()` database function (not the Worker +
+  service key as first planned): no secret key needed, and FK cascades remove all data.
+- App-wide place rating shown only when a place has ≥5 ratings (privacy + reliability).
+- Password rule in app: ≥8 chars with a letter and a number (Supabase min set to 8).

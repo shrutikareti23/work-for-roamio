@@ -21,6 +21,8 @@ const PAIRS = [
   ['onPrimary', 'primary'],
   ['primary', 'surface'],
   ['danger', 'surface'],
+  ['danger', 'surfaceMuted'],
+  ['primary', 'surfaceMuted'],
   ['text', 'surfaceMuted'],
 ] as const;
 
