@@ -13,10 +13,13 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
 ## Current status
 
-- **Last completed phase:** 2 (Core logic + tests).
-- **Next phase:** 3 (Supabase + email auth). Not started; waiting for owner's "continue".
-  Owner will need to create a free Supabase project (no credit card).
-- **In progress / uncommitted work:** none.
+- **Current phase:** 3 (Supabase + email auth) — IN PROGRESS.
+- **In progress:** done: verified Supabase free terms (via GitHub docs mirror), migration
+  `supabase/migrations/20261105000000_initial_schema.sql` (profiles, trips, trip_days,
+  ratings, RLS, get_place_ratings, delete_my_account), PGlite RLS tests (15 passing),
+  supabase-js + secure storage packages installed. To do: app Supabase client +
+  LargeSecureStore, auth screens (sign in/up, OTP code verify, reset password, sign
+  out, delete account), tests, docs, owner setup guide, phase report.
 - **Open TODOs carried forward:** owner to glance at https://ourairports.com/data/ to
   confirm the airport data is still public domain (sandbox can't reach that site).
 

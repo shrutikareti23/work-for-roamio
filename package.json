@@ -4,7 +4,8 @@
   "workspaces": [
     "mobile",
     "worker",
-    "shared"
+    "shared",
+    "supabase"
   ],
   "scripts": {
     "lint": "npm run lint --workspaces --if-present",
