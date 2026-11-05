@@ -38,6 +38,35 @@ describe('profiles', () => {
     expect(rows).toEqual([{ id: ALICE }]);
   });
 
+  it('take the name given at sign-up, trimmed and capped at 60 characters', async () => {
+    const C = '33333333-3333-3333-3333-333333333333';
+    const D = '44444444-4444-4444-4444-444444444444';
+    await createUser(db, C, 'c@example.com', { display_name: '  Shrutika  ' });
+    await createUser(db, D, 'd@example.com', { display_name: 'x'.repeat(80) });
+    const name = (id: string) =>
+      as(
+        db,
+        id,
+        async (tx) =>
+          (await tx.query<{ display_name: string | null }>('select display_name from profiles'))
+            .rows[0]?.display_name,
+      );
+    expect(await name(C)).toBe('Shrutika');
+    expect(await name(D)).toHaveLength(60);
+    expect(await name(ALICE)).toBeNull(); // no name given
+  });
+
+  it('owner can change their name; blank or untrimmed names are rejected', async () => {
+    await as(db, ALICE, (tx) =>
+      tx.query(`update profiles set display_name = 'Alice' where id = $1`, [ALICE]),
+    );
+    await expect(
+      as(db, ALICE, (tx) =>
+        tx.query(`update profiles set display_name = '  ' where id = $1`, [ALICE]),
+      ),
+    ).rejects.toThrow(/check constraint/);
+  });
+
   it('cannot be edited by someone else', async () => {
     await as(db, BOB, (tx) =>
       tx.query(`update profiles set display_name = 'hacked' where id = $1`, [ALICE]),

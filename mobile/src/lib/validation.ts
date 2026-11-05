@@ -26,3 +26,17 @@ export function passwordProblem(password: string): string | null {
 export function isValidCode(code: string): boolean {
   return /^\d{6,10}$/.test(code.trim());
 }
+
+export const NAME_MAX = 60;
+
+/** Trims a display name; empty means "no name" (null). */
+export function cleanName(name: string): string | null {
+  const trimmed = name.trim().replace(/\s+/g, ' ');
+  return trimmed ? trimmed : null;
+}
+
+export function nameProblem(name: string): string | null {
+  const cleaned = cleanName(name);
+  if (cleaned && cleaned.length > NAME_MAX) return `Keep it under ${NAME_MAX} characters.`;
+  return null;
+}

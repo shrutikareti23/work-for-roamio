@@ -19,8 +19,17 @@ export async function freshDb(): Promise<PGlite> {
 }
 
 /** Create a user the way Supabase Auth would (this also fires our profile trigger). */
-export async function createUser(db: PGlite, id: string, email: string): Promise<void> {
-  await db.query('insert into auth.users (id, email) values ($1, $2)', [id, email]);
+export async function createUser(
+  db: PGlite,
+  id: string,
+  email: string,
+  metadata: Record<string, unknown> = {},
+): Promise<void> {
+  await db.query('insert into auth.users (id, email, raw_user_meta_data) values ($1, $2, $3)', [
+    id,
+    email,
+    JSON.stringify(metadata),
+  ]);
 }
 
 /**

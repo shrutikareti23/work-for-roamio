@@ -13,14 +13,24 @@ Takes about 15 minutes. You only do this once.
    - Region: the one closest to you.
 4. Click **Create new project** and wait ~2 minutes until it's ready.
 
-## 2. Create the tables (copy-paste one file)
+## 2. Create the tables (copy-paste the SQL files, in order)
 
-1. In the left menu open **SQL Editor** → **New query**.
-2. Open this file on GitHub and click the **Copy raw file** button (top right of the code):
-   https://github.com/shrutikareti23/work-for-roamio/blob/main/supabase/migrations/20261105000000_initial_schema.sql
-3. Paste it into the SQL editor and click **Run**.
-4. You should see **"Success. No rows returned"**.
-5. Check: left menu **Table Editor** should list `profiles`, `trips`, `trip_days`, `ratings`.
+Run **each file** in https://github.com/shrutikareti23/work-for-roamio/tree/main/supabase/migrations
+**in name order** (oldest first). For each one:
+
+1. In Supabase's left menu open **SQL Editor** → **New query**.
+2. Open the file on GitHub and click the **Copy raw file** button (top right of the code).
+3. Paste it into the SQL editor and click **Run**. You should see **"Success. No rows returned"**.
+
+Files so far:
+
+| File                                      | What it does                             |
+| ----------------------------------------- | ---------------------------------------- |
+| `20261105000000_initial_schema.sql`       | Tables, security rules, account deletion |
+| `20261105010000_profile_display_name.sql` | Saves the name given at sign-up          |
+
+Check: left menu **Table Editor** should list `profiles`, `trips`, `trip_days`, `ratings`.
+Saving the query in Supabase is optional: the files live in GitHub.
 
 ## 3. Email sign-in settings
 

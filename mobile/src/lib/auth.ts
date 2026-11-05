@@ -2,7 +2,7 @@ import type { Session, SupabaseClient } from '@supabase/supabase-js';
 
 import type { ApiResult } from './api';
 import { supabase as defaultClient } from './supabase';
-import { normalizeEmail } from './validation';
+import { cleanName, normalizeEmail } from './validation';
 
 /**
  * All sign-in related actions. Each returns ok/data or a friendly message, never throws.
@@ -83,9 +83,18 @@ export function signIn(email: string, password: string, client: Client = default
 export async function signUp(
   email: string,
   password: string,
+  name = '',
   client: Client = defaultClient,
 ): Promise<ApiResult<{ needsCode: boolean }>> {
-  const r = await run(client, (c) => c.auth.signUp({ email: normalizeEmail(email), password }));
+  const displayName = cleanName(name);
+  const r = await run(client, (c) =>
+    c.auth.signUp({
+      email: normalizeEmail(email),
+      password,
+      // Stored with the account; the database copies it into the profile (see migrations).
+      options: displayName ? { data: { display_name: displayName } } : undefined,
+    }),
+  );
   if (!r.ok) return r;
   return { ok: true, data: { needsCode: r.data.session === null } };
 }

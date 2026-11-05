@@ -65,9 +65,28 @@ describe('auth actions', () => {
   it('sign-up asks for a code when email confirmation is on', async () => {
     const f = fakeClient();
     f.auth.signUp.mockResolvedValue({ data: { user: { id: 'u' }, session: null }, error: null });
-    expect(await signUp('a@b.co', 'lisbon2026', f.client)).toEqual({
+    expect(await signUp('a@b.co', 'lisbon2026', '', f.client)).toEqual({
       ok: true,
       data: { needsCode: true },
+    });
+    expect(f.auth.signUp).toHaveBeenCalledWith({
+      email: 'a@b.co',
+      password: 'lisbon2026',
+      options: undefined,
+    });
+  });
+
+  it('sign-up sends the optional name, tidied, with the account', async () => {
+    const f = fakeClient();
+    f.auth.signUp.mockResolvedValue({ data: { user: { id: 'u' }, session: {} }, error: null });
+    expect(await signUp('a@b.co', 'lisbon2026', '  Shrutika   Reddy ', f.client)).toEqual({
+      ok: true,
+      data: { needsCode: false },
+    });
+    expect(f.auth.signUp).toHaveBeenCalledWith({
+      email: 'a@b.co',
+      password: 'lisbon2026',
+      options: { data: { display_name: 'Shrutika Reddy' } },
     });
   });
 

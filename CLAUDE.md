@@ -19,7 +19,10 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
   migration run, Confirm email OFF, min password 8. **Sign-up verified on the phone**
   (user + auto-created profile row seen in dashboard). Owner is testing sign-out /
   sign-in / delete. Forgot-password untestable until custom SMTP exists.
-- Possible later: optional "Your name" field (profiles.display_name is unused so far).
+- Added (owner request): optional "Your name" at sign-up (sent as user metadata
+  `display_name`, copied into profiles by the trigger in migration
+  `20261105010000_profile_display_name.sql`) and editable on the Account tab
+  (NameEditor, lib/profile.ts). **Owner must run that second migration** in Supabase.
 - **Next phase:** 4 (Worker data proxy). Not started; waiting for owner's "continue".
   Owner will need a free Cloudflare account.
 - **In progress / uncommitted work:** none.
@@ -128,7 +131,8 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`,
 │                         diet, place, weather, trip, itinerary); tests in shared/test
 ├── scripts/              build-airports.mjs (regenerates worker/src/data/airports.json)
 ├── supabase/             workspace `roamio-db`
-│   ├── migrations/       SQL migrations (run in Supabase SQL Editor, in name order)
+│   ├── migrations/       SQL migrations (owner runs each new one in Supabase SQL Editor,
+│   │                     in name order; list them in docs/setup/supabase.md)
 │   └── test/             PGlite (Postgres-in-WASM) RLS tests + Supabase shim
 ├── docs/setup/           owner setup guides (supabase.md, ...)
 ├── docs/                 privacy-policy.html (GitHub Pages), store checklist
@@ -331,7 +335,8 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
   sign out, delete account; friendly error messages), `lib/session.tsx` (AuthProvider
   / useAuth), `lib/validation.ts`; components TextField, FormMessage, Button
   (loading + danger); Account tab signed-in/out states with 2-step delete confirm.
-- Tests: 104 Jest + 88 worker + 11 shared + 15 RLS (PGlite) = 218, all passing.
+- Tests: 109 Jest + 88 worker + 11 shared + 17 RLS (PGlite) = 225, all passing
+  (after the "Your name" addition).
 - Owner guide: `docs/setup/supabase.md`.
 
 ## Open questions / decisions log

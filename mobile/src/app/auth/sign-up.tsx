@@ -7,9 +7,11 @@ import { FormMessage } from '@/components/form-message';
 import { Screen } from '@/components/screen';
 import { TextField } from '@/components/text-field';
 import { signUp } from '@/lib/auth';
-import { isValidEmail, passwordProblem } from '@/lib/validation';
+import { isValidEmail, nameProblem, passwordProblem } from '@/lib/validation';
 
 export default function SignUpScreen() {
+  const [name, setName] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [emailError, setEmailError] = useState<string | null>(null);
@@ -21,11 +23,13 @@ export default function SignUpScreen() {
     setError(null);
     const eErr = isValidEmail(email) ? null : 'Please enter a valid email address.';
     const pErr = passwordProblem(password);
+    const nErr = nameProblem(name);
     setEmailError(eErr);
     setPasswordError(pErr);
-    if (eErr || pErr) return;
+    setNameError(nErr);
+    if (eErr || pErr || nErr) return;
     setBusy(true);
-    const r = await signUp(email, password);
+    const r = await signUp(email, password, name);
     setBusy(false);
     if (!r.ok) return setError(r.message);
     if (r.data.needsCode) {
@@ -41,6 +45,16 @@ export default function SignUpScreen() {
         Create a free account to save your trips. We&apos;ll email you a code to confirm it&apos;s
         you.
       </AppText>
+      <TextField
+        label="Your name (optional)"
+        value={name}
+        onChangeText={setName}
+        error={nameError}
+        autoCapitalize="words"
+        autoComplete="name"
+        textContentType="name"
+        maxLength={80}
+      />
       <TextField
         label="Email"
         value={email}

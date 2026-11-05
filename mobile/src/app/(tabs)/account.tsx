@@ -7,6 +7,7 @@ import { AppText } from '@/components/app-text';
 import { Button } from '@/components/button';
 import { Card } from '@/components/card';
 import { FormMessage } from '@/components/form-message';
+import { NameEditor } from '@/components/name-editor';
 import { Screen } from '@/components/screen';
 import { checkHealth } from '@/lib/api';
 import { deleteAccount, signOut } from '@/lib/auth';
@@ -39,6 +40,7 @@ export default function AccountScreen() {
   const [serverStatus, setServerStatus] = useState('Checking…');
   const [message, setMessage] = useState<{ text: string; kind: 'error' | 'info' } | null>(null);
   const [busy, setBusy] = useState<'signout' | 'delete' | null>(null);
+  const [name, setName] = useState<string | null>(null);
 
   // useEffect runs after the screen first appears (like an "on load" callback).
   useEffect(() => {
@@ -82,8 +84,9 @@ export default function AccountScreen() {
       ) : session ? (
         <>
           <Card>
-            <AppText variant="heading">Signed in</AppText>
+            <AppText variant="heading">{name ? `Hi, ${name}` : 'Signed in'}</AppText>
             <AppText color="textSecondary">{session.user.email}</AppText>
+            <NameEditor userId={session.user.id} onName={setName} />
             <Button
               label="Sign out"
               variant="secondary"

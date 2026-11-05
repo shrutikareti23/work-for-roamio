@@ -7,6 +7,10 @@ import SignUpScreen from '@/app/auth/sign-up';
 import { useAuth } from '@/lib/session';
 
 jest.mock('@/lib/session', () => ({ useAuth: jest.fn() }));
+jest.mock('@/lib/profile', () => ({
+  getProfile: jest.fn(async () => ({ ok: true, data: { id: 'u1', displayName: 'Shrutika' } })),
+  updateDisplayName: jest.fn(),
+}));
 jest.mock('expo-router', () => ({
   router: { push: jest.fn(), replace: jest.fn(), dismissAll: jest.fn() },
   Link: ({ children }: { children: unknown }) => children,
@@ -14,7 +18,10 @@ jest.mock('expo-router', () => ({
 
 const mockAuth = useAuth as jest.Mock;
 const signedOut = { session: null, loading: false, recovering: false, setRecovering: jest.fn() };
-const signedIn = { ...signedOut, session: { user: { email: 'shrutika@example.com' } } };
+const signedIn = {
+  ...signedOut,
+  session: { user: { id: 'u1', email: 'shrutika@example.com' } },
+};
 
 beforeEach(() => mockAuth.mockReturnValue(signedOut));
 
@@ -45,6 +52,8 @@ describe('Account tab', () => {
     mockAuth.mockReturnValue(signedIn);
     await render(<AccountScreen />);
     expect(screen.getByText('shrutika@example.com')).toBeTruthy();
+    expect(await screen.findByText('Hi, Shrutika')).toBeTruthy();
+    expect(screen.getByLabelText('Your name').props.value).toBe('Shrutika');
     expect(screen.getByRole('button', { name: 'Sign out' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'Delete my account' })).toBeTruthy();
   });
@@ -53,6 +62,7 @@ describe('Account tab', () => {
 describe('Sign-up form', () => {
   it('explains what is wrong before contacting the server', async () => {
     await render(<SignUpScreen />);
+    expect(screen.getByLabelText('Your name (optional)')).toBeTruthy();
     fireEvent.changeText(screen.getByLabelText('Email'), 'not-an-email');
     fireEvent.changeText(screen.getByLabelText('Password'), 'short');
     await fireEvent.press(screen.getByRole('button', { name: 'Create account' }));
