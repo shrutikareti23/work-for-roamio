@@ -100,6 +100,27 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
 - ESLint pinned to v9 (eslint-config-expo's plugins don't support v10 yet).
 - Expo Go only has built-in native modules; anything else needs an EAS dev build.
 
+## Owner's machine (Windows, no Mac)
+
+How the owner runs the app in Expo Go (verified working after Phase 1):
+
+1. PowerShell: `cd ~\work-for-roamio\mobile`, then `git pull` and `npm install` when
+   there are new changes.
+2. `npx expo start --tunnel ngrok`, then scan the QR code (iPhone: Camera app;
+   Android: scan from inside Expo Go).
+
+Fixes already applied on the owner's PC (don't re-explain unless they come back):
+
+- PowerShell script block → `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned`.
+- LAN mode timed out (firewall/Wi-Fi) → use tunnel mode.
+- `--tunnel` needs Expo CLI login; `npx expo login --sso` crashes on Windows when it
+  opens the browser (cmd `start` + `&` in the URL) → logged in with
+  `npx eas-cli@latest login --sso` instead (shares the same session).
+- `--tunnel ngrok` said "Install @expo/ngrok and try again" even after the global
+  install → install `@expo/ngrok` in the project (TODO Phase 2: add as devDependency).
+- Expo Go and the CLI must be signed in to the same Expo account.
+- Owner prefers short, plain step lists; avoid extra jargon and alternatives.
+
 ## Conventions
 
 - TypeScript `strict: true`. No `any` unless commented why.
@@ -184,6 +205,6 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`;
   optionally switch to native MapLibre once we use development builds.
 - Apple / Google native sign-in can't be fully tested in Expo Go; tested from Phase 9
   with an EAS development build (iOS dev builds need the Apple Developer account).
-- The cloud workspace is temporary: work must be pushed to GitHub repo
-  `work-for-roamio` (owner/account TBD — GitHub not yet connected to the session).
+- Code lives on GitHub: https://github.com/shrutikareti23/work-for-roamio (branch `main`).
+  The cloud workspace is temporary, so push at the end of every phase.
 - iOS `supportsTablet: false` for launch (avoids required iPad screenshots/review).
