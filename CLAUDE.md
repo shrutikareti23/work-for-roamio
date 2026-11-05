@@ -1,4 +1,4 @@
-# Travel Itinerary App — Project Guide
+# Roamio — Project Guide
 
 Cross-platform (iOS + Android) travel itinerary app. Expo + React Native + TypeScript
 front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
@@ -109,7 +109,7 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
   the Worker protects the quota.
 - Nominatim: max 1 req/s, no autocomplete-as-you-type, must cache.
 - Overpass public instance: fair use, keep queries small, cache aggressively.
-- Open-Meteo free API: **non-commercial use only** — see open question below.
+- Open-Meteo free API: **non-commercial use only** (OK: Roamio is free).
 
 ## Phased plan
 0. **Plan** — this file + plan approval. *(done when owner approves)*
@@ -144,9 +144,11 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
     permissions), eas.json profiles, EAS build + store submission checklist.
 
 ## Open questions / decisions log
-- Open-Meteo free API is licensed for non-commercial use. Fine if the app is free with
-  no ads / in-app purchases; if it will make money, weather needs another free source
-  or a paid plan. (Ask owner.)
+- App name: **Roamio** (working name). Placeholder bundle ID / package:
+  `com.shrutikareti.roamio` (change before first store submission if needed).
+- Plan approved by owner.
+- App is **free** (no ads / purchases) → Open-Meteo's non-commercial free API is OK.
+  Revisit if the app is ever monetised.
 - Maps: native MapLibre (`@maplibre/maplibre-react-native`) does not run in Expo Go.
   Proposed: MapLibre GL JS inside a WebView for map previews (works in Expo Go, free),
   optionally switch to native MapLibre once we use development builds.
