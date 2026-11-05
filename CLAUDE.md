@@ -11,6 +11,13 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 3. Run `npm install` then `npm test` from the repo root to confirm a clean start.
 4. Wait for the owner to say "continue" before starting the next phase.
 
+## Current status
+
+- **Last completed phase:** 1 (Skeleton) — app runs in Expo Go on the owner's phone.
+- **Next phase:** 2 (Core logic + tests). Not started; waiting for owner's "continue".
+- **In progress / uncommitted work:** none.
+- **Open TODOs carried forward:** add `@expo/ngrok` as a mobile devDependency (Phase 2).
+
 ## The owner
 
 - Knows Python and SQL, new to TypeScript / React Native.
@@ -29,6 +36,18 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 4. If something fails after a few honest attempts, stop and explain. Don't guess.
 5. Before first use of any external API, re-check its current free terms/limits and
    report changes to the owner.
+6. **Session handoff (owner's standing order): a new session must be able to pick up
+   perfectly from the repo alone.** So:
+   - At the **end of every phase**, before the phase report: update "Current status",
+     tick the phase ✅ in "Phased plan", add an entry to "Progress log" (what was built,
+     key decisions, what the owner did/set up, TODOs carried forward), update layout /
+     commands / gotchas / decisions if they changed, then commit and **push** and confirm
+     `git status -sb` shows `main...origin/main` with nothing ahead.
+   - **During a phase**, commit + push at sensible checkpoints as
+     `phase N (wip): <what>` and keep "Current status → In progress" accurate, so an
+     ended session loses little.
+   - Never leave important context only in chat: decisions, accounts the owner created,
+     secret _names_ (never values), URLs of deployed services all go in this file.
 
 ## Hard constraints
 
@@ -200,6 +219,24 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 10. **Polish + store readiness** — accessibility and small-screen pass, error states,
     privacy policy page, app.json (bundle IDs, icons/splash placeholders, minimal
     permissions), eas.json profiles, EAS build + store submission checklist.
+
+## Progress log
+
+### Phase 0 — Plan ✅
+
+- CLAUDE.md + phased plan approved. App named Roamio; app is free (no ads/IAP).
+- Owner's full requirements saved verbatim in `docs/SPEC.md`.
+
+### Phase 1 — Skeleton ✅
+
+- npm workspaces monorepo: `mobile` (Expo SDK 58, Expo Router native tabs Plan /
+  Trips / Account, light/dark theme, accessible AppText/Button/Card/Screen),
+  `worker` (GET /health + JSON 404), `shared` (zod HealthResponse schema).
+- Tests: 24 Jest (incl. WCAG AA color-contrast checks) + 3 Vitest, all passing;
+  lint, typecheck, Prettier clean; iOS + Android bundles compile.
+- Owner set up: GitHub repo `shrutikareti23/work-for-roamio` + Claude GitHub App,
+  Node + Git on Windows, Expo Go on phone, Expo account (CLI login via eas-cli SSO).
+- Carried forward: add `@expo/ngrok` devDependency.
 
 ## Open questions / decisions log
 
