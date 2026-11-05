@@ -14,10 +14,12 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 ## Current status
 
 - **Last completed phase:** 3 (Supabase + email auth). Code done and tested locally.
-- **Waiting on owner:** finish `docs/setup/supabase.md` (project created; migration;
-  **Confirm email OFF for now**; URL + publishable key in `mobile/.env`), then test
-  sign-up / sign-in / sign-out / delete on the phone. Forgot-password can't be tested
-  until custom SMTP exists.
+- **Owner setup done:** Supabase project created (URL
+  `https://hsgiqybkdrbmpagmhjku.supabase.co`, publishable key in owner's `mobile/.env`),
+  migration run, Confirm email OFF, min password 8. **Sign-up verified on the phone**
+  (user + auto-created profile row seen in dashboard). Owner is testing sign-out /
+  sign-in / delete. Forgot-password untestable until custom SMTP exists.
+- Possible later: optional "Your name" field (profiles.display_name is unused so far).
 - **Next phase:** 4 (Worker data proxy). Not started; waiting for owner's "continue".
   Owner will need a free Cloudflare account.
 - **In progress / uncommitted work:** none.
@@ -190,6 +192,13 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
   install → install `@expo/ngrok` in the project (TODO Phase 2: add as devDependency).
 - Expo Go and the CLI must be signed in to the same Expo account.
 - Owner prefers short, plain step lists; avoid extra jargon and alternatives.
+- `git pull` once failed because npm had changed package-lock.json locally → fix with
+  `git restore package-lock.json` then `git pull`, `npm install`.
+- Owner's npm is newer and blocks install scripts ("install-scripts" warnings for
+  esbuild, workerd, @parcel/watcher). Not needed for the app; handle in Phase 4 if the
+  owner ever runs wrangler locally (`npm install-scripts approve <pkg>`).
+- Supabase dashboard "Connect" shows Next.js names (NEXT_PUBLIC_...); owner must use
+  our names EXPO_PUBLIC_SUPABASE_URL / EXPO_PUBLIC_SUPABASE_KEY with the same values.
 
 ## Conventions
 
