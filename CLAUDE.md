@@ -3,6 +3,14 @@
 Cross-platform (iOS + Android) travel itinerary app. Expo + React Native + TypeScript
 front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
+## Start here (new session)
+
+1. Read this file, then **`docs/SPEC.md`** — the owner's full original requirements
+   (feature details, phase-report format). SPEC.md wins if anything here disagrees.
+2. Check progress in "Phased plan" below (✅ = done) and `git log --oneline`.
+3. Run `npm install` then `npm test` from the repo root to confirm a clean start.
+4. Wait for the owner to say "continue" before starting the next phase.
+
 ## The owner
 
 - Knows Python and SQL, new to TypeScript / React Native.
