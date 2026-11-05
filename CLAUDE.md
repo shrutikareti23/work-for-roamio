@@ -14,8 +14,11 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 ## Current status
 
 - **Last completed phase:** 1 (Skeleton) — app runs in Expo Go on the owner's phone.
-- **Next phase:** 2 (Core logic + tests). Not started; waiting for owner's "continue".
-- **In progress / uncommitted work:** none.
+- **Current phase:** 2 (Core logic + tests) — IN PROGRESS.
+- **In progress:** done so far: shared schemas (dates, geo, diet, place, weather, trip,
+  itinerary), worker/src/pipeline (hours, diet, weather, restaurants, airports),
+  airports.json. Still to do: mobile/src/lib/deeplinks.ts, all Phase 2 unit tests,
+  lint/format, docs, phase report.
 - **Open TODOs carried forward:** add `@expo/ngrok` as a mobile devDependency (Phase 2).
 
 ## The owner
