@@ -213,10 +213,15 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
    weather strip, map previews, all attributions.
 8. **Trips + offline + ratings** — save / view / edit / delete trips, sync across
    devices, local offline cache, thumbs up/down ratings with notes, app rating shown
-   once a place has enough ratings.
-9. **Apple + Google sign-in, sharing, backups** — native sign-in (needs a development
-   build via EAS), optional read-only share links, nightly GitHub Actions backup.
-10. **Polish + store readiness** — accessibility and small-screen pass, error states,
+   once a place has enough ratings. Plus no-AI edits: swap a slot (backups / other
+   verified places), remove or move a slot, regenerate a day with an optional note.
+9. **Trip assistant chat** — ongoing chat per trip (SPEC A1): change the plan in plain
+   words (targeted edits to the right day/slot, shows what changed, undo), answer
+   questions using only the trip's data, remembers the conversation; per-user daily
+   AI limit.
+10. **Apple + Google sign-in, sharing, backups** — native sign-in (needs a development
+    build via EAS), optional read-only share links, nightly GitHub Actions backup.
+11. **Polish + store readiness** — accessibility and small-screen pass, error states,
     privacy policy page, app.json (bundle IDs, icons/splash placeholders, minimal
     permissions), eas.json profiles, EAS build + store submission checklist.
 
@@ -243,12 +248,15 @@ Fixes already applied on the owner's PC (don't re-explain unless they come back)
 - App name: **Roamio** (working name). Placeholder bundle ID / package:
   `com.shrutikareti.roamio` (change before first store submission if needed).
 - Plan approved by owner.
+- 2026-11-05: owner wants Roamio to be a **communicative chatbot throughout** → added
+  the trip assistant chat (SPEC.md A1, new Phase 9) and no-AI slot edits (Phase 8).
+  Old phases 9–10 renumbered to 10–11.
 - App is **free** (no ads / purchases) → Open-Meteo's non-commercial free API is OK.
   Revisit if the app is ever monetised.
 - Maps: **decided — web-based** MapLibre GL JS in a WebView. Native MapLibre
   (`@maplibre/maplibre-react-native`) does not run in Expo Go. Chosen: MapLibre GL JS inside a WebView for map previews (works in Expo Go, free),
   optionally switch to native MapLibre once we use development builds.
-- Apple / Google native sign-in can't be fully tested in Expo Go; tested from Phase 9
+- Apple / Google native sign-in can't be fully tested in Expo Go; tested from Phase 10
   with an EAS development build (iOS dev builds need the Apple Developer account).
 - Code lives on GitHub: https://github.com/shrutikareti23/work-for-roamio (branch `main`).
   The cloud workspace is temporary, so push at the end of every phase.

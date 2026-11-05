@@ -83,3 +83,31 @@ The only money I will spend is the Apple Developer ($99/yr) and Google Play ($25
 - Accessible UI, dark mode, works on small phones
 - A privacy policy page (static HTML I can host on GitHub Pages) that discloses: Gemini free tier data may be used by Google to improve products, what account data is stored in Supabase, how users delete their account, and third-party data sources
 - App config ready for store submission: bundle IDs, icons/splash placeholders, permissions only if needed, eas.json with development/preview/production profiles
+
+---
+
+## Additions approved by the owner (after the original spec)
+
+### A1. Communicative trip assistant (approved 2026-11-05)
+
+The owner wants Roamio to be a communicative chatbot throughout, not only for intake.
+Each trip has an ongoing chat ("trip assistant") where the user can:
+
+- **Change the plan in plain words**, e.g. "make day 3 kid-friendly", "swap day 1
+  dinner for something cheaper", "more relaxed pace on day 2". The assistant works out
+  which day/slot to change, changes only that, and shows what changed (with undo).
+- **Ask questions about the trip**, e.g. "what's the weather on day 2?", "is the museum
+  open on Monday?", "which restaurant suits my vegan friend?". Answers come only from
+  the trip's own data (places, hours, weather, diet tags). If it doesn't know, it says so.
+- **Keep chatting naturally**: it remembers the conversation for that trip.
+
+Also in the itinerary UI (no AI needed, instant, free):
+
+- **Swap** a slot: restaurants → one of the 2 backups; attractions → another verified
+  nearby place that is open then.
+- **Remove** or **move** a slot to another day.
+- **Regenerate a day** with an optional short note ("fewer museums, vegetarian lunch").
+
+Rules: the assistant can only use verified places from our candidate lists (never
+invents places or facts); every AI action counts toward a per-user daily limit in the
+Worker to protect the free Gemini quota, with a friendly message when reached.
