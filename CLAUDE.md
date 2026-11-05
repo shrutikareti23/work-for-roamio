@@ -4,12 +4,14 @@ Cross-platform (iOS + Android) travel itinerary app. Expo + React Native + TypeS
 front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 
 ## The owner
+
 - Knows Python and SQL, new to TypeScript / React Native.
 - Explain in plain language; Python comparisons help (e.g. "zod is like pydantic",
   "a React component is like a function that returns UI", "npm is pip").
 - Owner has no Mac: all native builds go through EAS Build (cloud).
 
 ## How we work
+
 1. Build ONE phase at a time (see "Phased plan"). Never start the next phase until
    the owner says "continue".
 2. End every phase with a phase report: what was built, files changed, packages
@@ -21,6 +23,7 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
    report changes to the owner.
 
 ## Hard constraints
+
 - **$0 for APIs and hosting.** Only spend: Apple Developer ($99/yr), Google Play ($25).
   No paid APIs, nothing that needs a credit card. If something can't be free, say so
   and propose a free workaround.
@@ -32,49 +35,73 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
   only ever has the public **anon** key (safe because of row-level security).
 
 ## Tech stack
-| Area | Choice |
-|---|---|
-| App | Expo (latest SDK), React Native, TypeScript strict, Expo Router |
-| Builds | EAS Build free tier; `eas.json` with development / preview / production |
-| Backend | One Cloudflare Worker (free) + Cloudflare KV cache + daily cron |
-| DB / Auth | Supabase free: Postgres + Auth (email, Apple, Google), RLS on every table |
-| LLM | Google Gemini API free tier, Flash / Flash-Lite, via Worker only |
-| Places | OpenStreetMap Overpass + Nominatim (User-Agent, heavy caching, ≤1 req/s Nominatim) |
-| Hours | `opening_hours` npm library |
-| Photos | Wikimedia Commons / Wikipedia via OSM `wikidata` / `wikimedia_commons` tags, with attribution |
-| Maps | MapLibre + OpenFreeMap tiles (attribution required) |
-| Weather | Open-Meteo forecast (≤16 days); beyond that "typical weather" from historical data, clearly labelled; CC-BY attribution |
-| Flights/stays | Deep links only (Google Flights, Skyscanner, Airbnb, Booking.com) via expo-web-browser |
-| Airports | OurAirports public-domain data, trimmed and bundled (city → IATA) |
-| Backups | GitHub Actions nightly `pg_dump` |
-| Tests | Jest (app, via jest-expo) and Vitest (Worker) |
 
-## Repository layout (target)
+| Area          | Choice                                                                                                                  |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| App           | Expo (latest SDK), React Native, TypeScript strict, Expo Router                                                         |
+| Builds        | EAS Build free tier; `eas.json` with development / preview / production                                                 |
+| Backend       | One Cloudflare Worker (free) + Cloudflare KV cache + daily cron                                                         |
+| DB / Auth     | Supabase free: Postgres + Auth (email, Apple, Google), RLS on every table                                               |
+| LLM           | Google Gemini API free tier, Flash / Flash-Lite, via Worker only                                                        |
+| Places        | OpenStreetMap Overpass + Nominatim (User-Agent, heavy caching, ≤1 req/s Nominatim)                                      |
+| Hours         | `opening_hours` npm library                                                                                             |
+| Photos        | Wikimedia Commons / Wikipedia via OSM `wikidata` / `wikimedia_commons` tags, with attribution                           |
+| Maps          | MapLibre + OpenFreeMap tiles (attribution required)                                                                     |
+| Weather       | Open-Meteo forecast (≤16 days); beyond that "typical weather" from historical data, clearly labelled; CC-BY attribution |
+| Flights/stays | Deep links only (Google Flights, Skyscanner, Airbnb, Booking.com) via expo-web-browser                                  |
+| Airports      | OurAirports public-domain data, trimmed and bundled (city → IATA)                                                       |
+| Backups       | GitHub Actions nightly `pg_dump`                                                                                        |
+| Tests         | Jest (app, via jest-expo) and Vitest (Worker)                                                                           |
+
+## Repository layout
+
+npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`; one
+`node_modules` at the root). `@roamio/shared` is imported by both app and Worker.
+
 ```
-/                       repo root (this folder)
+/                         repo root
 ├── CLAUDE.md
-├── mobile/             Expo app
-│   ├── app/            Expo Router screens (file name = route, like Flask routes by file)
-│   ├── components/     reusable UI (PlaceCard, RestaurantCard, ChatBubble, ...)
-│   ├── lib/            app logic: api client, supabase client, deeplinks.ts, offline cache
-│   │   └── providers/  hotels.ts (pricing provider interface; launch = no prices)
-│   ├── theme/          colors (light/dark), spacing, typography
-│   └── __tests__/
-├── worker/             Cloudflare Worker (TypeScript)
+├── package.json          workspaces + root scripts (lint, typecheck, test, format)
+├── mobile/               Expo app (SDK 58)
+│   ├── app.json          name, bundle IDs, icons, splash
+│   └── src/
+│       ├── app/          Expo Router screens (file name = route); _layout.tsx = tabs
+│       ├── components/   reusable UI (AppText, Button, Card, Screen, PlaceCard, ...)
+│       ├── lib/          api client, config, supabase client, deeplinks.ts, offline cache
+│       │   └── providers/ hotels.ts (pricing provider interface; launch = no prices)
+│       ├── theme/        colors (light/dark), spacing, useTheme hook
+│       └── __tests__/    Jest tests
+├── worker/               Cloudflare Worker (wrangler.jsonc, src/index.ts)
 │   ├── src/
-│   │   ├── routes/     HTTP endpoints (/intake, /itinerary, /places, /account, ...)
-│   │   ├── sources/    nominatim, overpass, openmeteo, wikimedia, gemini clients
-│   │   ├── pipeline/   hours check, diet filter, weather swap, restaurant pick, schedule
-│   │   └── lib/        cache, rate limit, retry/backoff, auth (Supabase JWT verify)
-│   └── test/
-├── shared/             types + zod schemas used by both app and Worker
-├── supabase/
-│   └── migrations/     SQL migrations (tables, RLS policies)
-├── docs/               privacy-policy.html (GitHub Pages), store checklist
-└── .github/workflows/  nightly DB backup
+│   │   ├── routes/       HTTP endpoints (/intake, /itinerary, /places, /account, ...)
+│   │   ├── sources/      nominatim, overpass, openmeteo, wikimedia, gemini clients
+│   │   ├── pipeline/     hours check, diet filter, weather swap, restaurant pick, schedule
+│   │   └── lib/          cache, rate limit, retry/backoff, auth (Supabase JWT verify)
+│   └── test/             Vitest tests
+├── shared/src/           types + zod schemas used by both app and Worker
+├── supabase/migrations/  SQL migrations (tables, RLS policies)
+├── docs/                 privacy-policy.html (GitHub Pages), store checklist
+└── .github/workflows/    nightly DB backup
 ```
+
+## Commands (run from repo root unless noted)
+
+- `npm install` — install everything (all workspaces)
+- `npm test` / `npm run lint` / `npm run typecheck` / `npm run format`
+- `cd mobile && npx expo start` — dev server for Expo Go
+- `cd worker && npx wrangler dev` — run the Worker locally on :8787
+- Add app packages with `cd mobile && npx expo install <pkg>` (picks SDK-compatible
+  versions). In this sandbox Expo's version API is blocked by the proxy, so prefix
+  with `EXPO_OFFLINE=1`.
+
+## Gotchas
+
+- TypeScript 6 no longer auto-loads `@types/*`; list them in `compilerOptions.types`.
+- ESLint pinned to v9 (eslint-config-expo's plugins don't support v10 yet).
+- Expo Go only has built-in native modules; anything else needs an EAS dev build.
 
 ## Conventions
+
 - TypeScript `strict: true`. No `any` unless commented why.
 - ESLint + Prettier; run `npm run lint` and `npm test` before every commit.
 - Validate every external/LLM response with zod (like pydantic) before using it.
@@ -98,6 +125,7 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
   session links, or other AI attribution lines** in commits or PRs (owner's request).
 
 ## Free-tier limits to design around (re-verify at time of use)
+
 - **Cloudflare KV free: only ~1,000 writes/day** (100k reads/day). Cache whole
   bundles (e.g. one key per Overpass area query), not one key per tiny item, and use
   long TTLs.
@@ -112,8 +140,9 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 - Open-Meteo free API: **non-commercial use only** (OK: Roamio is free).
 
 ## Phased plan
-0. **Plan** — this file + plan approval. *(done when owner approves)*
-1. **Skeleton** — Expo app (Router, TS strict, ESLint/Prettier, Jest, light/dark theme,
+
+0. **Plan** — this file + plan approval. ✅
+1. **Skeleton** ✅ — Expo app (Router, TS strict, ESLint/Prettier, Jest, light/dark theme,
    tab layout with placeholder screens), Worker skeleton (`/health`, Vitest), `shared/`.
    See it in Expo Go.
 2. **Core logic + tests** — pure functions with unit tests: deep links (with fallbacks),
@@ -144,14 +173,17 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
     permissions), eas.json profiles, EAS build + store submission checklist.
 
 ## Open questions / decisions log
+
 - App name: **Roamio** (working name). Placeholder bundle ID / package:
   `com.shrutikareti.roamio` (change before first store submission if needed).
 - Plan approved by owner.
 - App is **free** (no ads / purchases) → Open-Meteo's non-commercial free API is OK.
   Revisit if the app is ever monetised.
-- Maps: native MapLibre (`@maplibre/maplibre-react-native`) does not run in Expo Go.
-  Proposed: MapLibre GL JS inside a WebView for map previews (works in Expo Go, free),
+- Maps: **decided — web-based** MapLibre GL JS in a WebView. Native MapLibre
+  (`@maplibre/maplibre-react-native`) does not run in Expo Go. Chosen: MapLibre GL JS inside a WebView for map previews (works in Expo Go, free),
   optionally switch to native MapLibre once we use development builds.
 - Apple / Google native sign-in can't be fully tested in Expo Go; tested from Phase 9
   with an EAS development build (iOS dev builds need the Apple Developer account).
-- The cloud workspace is temporary: work must be pushed to a GitHub repo to survive.
+- The cloud workspace is temporary: work must be pushed to GitHub repo
+  `work-for-roamio` (owner/account TBD — GitHub not yet connected to the session).
+- iOS `supportsTablet: false` for launch (avoids required iPad screenshots/review).

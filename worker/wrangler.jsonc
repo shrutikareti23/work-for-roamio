@@ -1,0 +1,13 @@
+// Cloudflare Worker config (like a settings file for the server).
+// Secrets (Gemini key, Supabase service key) are NOT here: they are added with
+// `npx wrangler secret put NAME` and live only in Cloudflare.
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "roamio-worker",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-11-01",
+  "observability": { "enabled": true },
+  "vars": {
+    "APP_VERSION": "0.1.0",
+  },
+}

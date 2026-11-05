@@ -9,3 +9,6 @@ dist/
 coverage/
 *.log
 .DS_Store
+mobile/ios/
+mobile/android/
+expo-env.d.ts
