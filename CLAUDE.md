@@ -14,17 +14,21 @@ front end, one Cloudflare Worker as backend proxy, Supabase for database + auth.
 ## Current status
 
 - **Last completed phase:** 3 (Supabase + email auth). Code done and tested locally.
-- **Waiting on owner:** create the Supabase project and follow `docs/setup/supabase.md`
-  (run the migration, email settings + code templates, put URL + publishable key in
-  `mobile/.env`), then test sign-up / sign-in / reset / delete on the phone.
+- **Waiting on owner:** finish `docs/setup/supabase.md` (project created; migration;
+  **Confirm email OFF for now**; URL + publishable key in `mobile/.env`), then test
+  sign-up / sign-in / sign-out / delete on the phone. Forgot-password can't be tested
+  until custom SMTP exists.
 - **Next phase:** 4 (Worker data proxy). Not started; waiting for owner's "continue".
   Owner will need a free Cloudflare account.
 - **In progress / uncommitted work:** none.
 - **Open TODOs carried forward:**
   - Owner: glance at https://ourairports.com/data/ to confirm airport data is still
     public domain (sandbox can't reach that site).
-  - Before launch (Phase 11): set up free custom SMTP for Supabase Auth (default sender
-    only mails team members, 2/hour). Candidate: Brevo free plan — verify terms then.
+  - Before launch (Phase 11, or earlier if owner wants): set up free custom SMTP for
+    Supabase Auth (default sender only mails team members, 2/hour, and **email
+    templates can't be edited without custom SMTP**). Then turn Confirm email ON and
+    set the code templates from docs/setup/supabase.md. Candidates: Brevo free plan or
+    Gmail SMTP with an app password — verify terms then.
   - Phase 4: Worker verifies Supabase JWTs via JWKS (asymmetric signing keys).
 
 ## The owner
@@ -157,7 +161,10 @@ npm workspaces monorepo (root `package.json` lists `mobile`, `worker`, `shared`,
   raw.githubusercontent.com/supabase/supabase/master/apps/docs/content/guides/...
 - Supabase API keys: app uses the **publishable** key (`sb_publishable_...`); secret key
   (`sb_secret_...`) only server-side. Legacy anon/service_role still work.
-- Supabase default email sender: only to project team members, **2 emails/hour**.
+- Supabase default email sender: only to project team members, **2 emails/hour**, and
+  the dashboard **won't let you edit email templates until custom SMTP is set up**
+  (default templates send links, not codes). So "Confirm email" is OFF until SMTP.
+  App handles both: signUp() with no confirmation returns a session → no code screen.
 - Auth uses 6–10 digit email **codes** (verifyOtp type `email` / `recovery`), not
   links, so no deep-link redirect setup is needed (Expo Go tunnel URLs change).
 - RLS tests (`supabase/test`) take ~35 s: each test builds a fresh PGlite database.

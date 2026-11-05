@@ -26,26 +26,33 @@ Takes about 15 minutes. You only do this once.
 
 1. Left menu **Authentication** → **Sign In / Providers** → **Email**:
    - **Enable Email provider**: on
-   - **Confirm email**: on
+   - **Confirm email**: **off for now** (see note below)
    - **Minimum password length**: `8`
    - Click **Save**.
-2. Left menu **Authentication** → **Emails** → **Templates**. Roamio uses **codes**, not links.
-   - Open **Confirm signup**. Subject: `Your Roamio code`. Replace the body with:
-     ```html
-     <h2>Welcome to Roamio</h2>
-     <p>Your confirmation code is:</p>
-     <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
-     <p>Enter it in the app. If you didn't sign up, ignore this email.</p>
-     ```
-     Click **Save**.
-   - Open **Reset Password**. Subject: `Your Roamio password reset code`. Replace the body with:
-     ```html
-     <h2>Reset your Roamio password</h2>
-     <p>Your code is:</p>
-     <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
-     <p>If you didn't ask for this, ignore this email. Your password won't change.</p>
-     ```
-     Click **Save**.
+
+> **Why "Confirm email" is off for now:** Supabase only lets you edit email templates
+> after you connect your own email service (custom SMTP). Its default emails contain a
+> link, but Roamio uses 6-digit codes. Until we connect a free email service (before
+> launch, Phase 11), keep confirmation off. Sign up, sign in, sign out and delete
+> account all work; **Forgot password** will work once email is connected.
+>
+> Later, after custom SMTP is set up: turn **Confirm email** back on and set these
+> templates under **Authentication → Emails → Templates**:
+>
+> - **Confirm signup** — subject `Your Roamio code`, body:
+>   ```html
+>   <h2>Welcome to Roamio</h2>
+>   <p>Your confirmation code is:</p>
+>   <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
+>   <p>Enter it in the app. If you didn't sign up, ignore this email.</p>
+>   ```
+> - **Reset Password** — subject `Your Roamio password reset code`, body:
+>   ```html
+>   <h2>Reset your Roamio password</h2>
+>   <p>Your code is:</p>
+>   <p style="font-size:28px;font-weight:bold;letter-spacing:4px">{{ .Token }}</p>
+>   <p>If you didn't ask for this, ignore this email. Your password won't change.</p>
+>   ```
 
 ## 4. Copy two values into the app
 
